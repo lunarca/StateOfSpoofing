@@ -81,29 +81,34 @@ def handle_domain(domain):
     domain_model.domain = domain
 
     spf_record = spflib.SpfRecord.from_domain(domain)
+    try:
+        if spf_record is not None:
+            domain_model.spf_record = spf_record.record
+            domain_model.spf_strong = spf_record.is_record_strong()
+        else:
+            domain_model.spf_record = None
+            domain_model.spf_strong = False
 
-    if spf_record is not None:
-        domain_model.spf_record = spf_record.record
-        domain_model.spf_strong = spf_record.is_record_strong()
-    else:
-        domain_model.spf_record = None
-        domain_model.spf_strong = False
+        dmarc_record = dmarclib.DmarcRecord.from_domain(domain)
 
-    dmarc_record = dmarclib.DmarcRecord.from_domain(domain)
+        if dmarc_record is not None:
+            domain_model.dmarc_record = dmarc_record.record
+            domain_model.dmarc_policy = dmarc_record.policy
+            domain_model.dmarc_strong = dmarc_record.is_record_strong()
+        else:
+            domain_model.dmarc_record = None
+            domain_model.dmarc_policy = None
+            domain_model.dmarc_strong = False
 
-    if dmarc_record is not None:
-        domain_model.dmarc_record = dmarc_record.record
-        domain_model.dmarc_policy = dmarc_record.policy
-        domain_model.dmarc_strong = dmarc_record.is_record_strong()
-    else:
-        domain_model.dmarc_record = None
-        domain_model.dmarc_policy = None
-        domain_model.dmarc_strong = False
-
-    if dmarc_record is not None and spf_record is not None:
-        domain_model.domain_vulnerable = not (dmarc_record.is_record_strong() and spf_record.is_record_strong())
-    else:
-        domain_model.domain_vulnerable = True
+        if dmarc_record is not None and spf_record is not None:
+            domain_model.domain_vulnerable = not (domain_model.dmarc_strong and domain_model.spf_strong)
+        else:
+            domain_model.domain_vulnerable = True
+    except Exception as e:
+        logging.exception("Encountered an error processing domain %(domain)s: %(exception)s" % {
+            'domain': domain,
+            'exception': e,
+        })
 
     session.add(domain_model)
     session.commit()
