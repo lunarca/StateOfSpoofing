@@ -64,14 +64,24 @@ def handle_domain(domain):
     domain_model.domain = domain
 
     spf_record = spflib.SpfRecord.from_domain(domain)
+
+    if spf_record is not None:
+        domain_model.spf_record = spf_record.record
+        domain_model.spf_strong = spf_record.is_record_strong()
+    else:
+        domain_model.spf_record = None
+        domain_model.spf_strong = False
+
     dmarc_record = dmarclib.DmarcRecord.from_domain(domain)
 
-    domain_model.spf_record = spf_record.record
-    domain_model.spf_strong = spf_record.is_record_strong()
-
-    domain_model.dmarc_record = dmarc_record.record
-    domain_model.dmarc_policy = dmarc_record.policy
-    domain_model.dmarc_strong = dmarc_record.is_record_strong()
+    if dmarc_record is not None:
+        domain_model.dmarc_record = dmarc_record.record
+        domain_model.dmarc_policy = dmarc_record.policy
+        domain_model.dmarc_strong = dmarc_record.is_record_strong()
+    else:
+        domain_model.dmarc_record = None
+        domain_model.dmarc_policy = None
+        domain_model.dmarc_strong = False
 
     domain_model.domain_vulnerable = not (dmarc_record.is_record_strong() and spf_record.is_record_strong())
 
