@@ -27,6 +27,13 @@ def main():
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
 
+    if args.debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    logging.basicConfig(filename=args.logfile, level=log_level)
+
     try:
         with open(args.domain_filename, "r") as infile:
             for line in infile:
@@ -36,19 +43,22 @@ def main():
         exit(-1)
 
     for i in range(args.threads):
-        t = threading.Thread(target=worker)
+        t = threading.Thread(target=worker, name="Worker-%(i)s" % {"i": i}, args=(i,))
         t.daemon = True
         t.start()
 
     q.join()
 
 
-def worker():
+def worker(i):
     global q
+
+    logging.info("Spooling up worker %(i)s" % {"i": i})
 
     while True:
         try:
             domain = q.get()
+            logging.info("[worker-%(i)s] Processing domain %(domain)s" % {"i": i, "domain": domain})
             handle_domain(domain)
             q.task_done()
         except Exception as e:
@@ -94,6 +104,8 @@ def parse_args():
     parser.add_argument("domain_filename", help="Filename containing domains to scan")
     parser.add_argument("--db", type=str, help="Database file name", default="state.db")
     parser.add_argument("--threads", type=int, help="Number of worker threads", default=10)
+    parser.add_argument("--logfile", type=str, help="Name of log file", default="state_of_spoofing.log")
+    parser.add_argument("--debug", action="store_true", help="Log in debug mode", default=False)
     return parser.parse_args()
 
 
