@@ -14,18 +14,18 @@ import threading
 
 
 q = Queue.Queue()
-Session = None
+SessionMaker = None
 
 
 def main():
     global q
-    global Session
+    global SessionMaker
 
     args = parse_args()
 
     engine = create_engine("sqlite:///%(db)s" % {'db': args.db})
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
+    SessionMaker = sessionmaker(bind=engine)
 
     if args.debug:
         log_level = logging.DEBUG
@@ -66,8 +66,8 @@ def worker(i):
 
 
 def handle_domain(domain):
-    global Session
-    session = Session()
+    global SessionMaker
+    session = SessionMaker()
 
     domain_model = Domain()
 
