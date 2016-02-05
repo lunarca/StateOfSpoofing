@@ -1,2 +1,2 @@
-emailprotectionslib>=0.5.1
+emailprotectionslib>=0.5.2
 progressbar
