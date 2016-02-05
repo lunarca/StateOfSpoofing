@@ -100,7 +100,10 @@ def handle_domain(domain):
         domain_model.dmarc_policy = None
         domain_model.dmarc_strong = False
 
-    domain_model.domain_vulnerable = not (dmarc_record.is_record_strong() and spf_record.is_record_strong())
+    if dmarc_record is not None and spf_record is not None:
+        domain_model.domain_vulnerable = not (dmarc_record.is_record_strong() and spf_record.is_record_strong())
+    else:
+        domain_model.domain_vulnerable = True
 
     session.add(domain_model)
     session.commit()
