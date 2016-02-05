@@ -23,16 +23,22 @@ def main():
 
     args = parse_args()
 
+    print "[*] Starting Up"
+    print "[*] Initializing Database Engine at sqlite:///%(db_path)s" % {"db_path": args.db}
+
     engine = create_engine("sqlite:///%(db)s" % {'db': args.db})
     Base.metadata.create_all(engine)
     SessionMaker = sessionmaker(bind=engine)
 
+    print "[*] Logging to %(logfile)s" % {"logfile": args.logfile}
     if args.debug:
         log_level = logging.DEBUG
     else:
         log_level = logging.INFO
 
     logging.basicConfig(filename=args.logfile, level=log_level)
+
+    print "[*] Ingesting %(infile)s" % {'infile': args.domain_filename}
 
     try:
         with open(args.domain_filename, "r") as infile:
@@ -42,6 +48,7 @@ def main():
         print "Error: Could not open file"
         exit(-1)
 
+    print "[*] Spooling up worker threads"
     for i in range(args.threads):
         t = threading.Thread(target=worker, name="Worker-%(i)s" % {"i": i}, args=(i,))
         t.daemon = True
