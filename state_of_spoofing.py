@@ -78,7 +78,7 @@ def handle_domain(domain):
 
     domain_model = Domain()
 
-    domain_model.domain = domain
+    domain_model.domain_name = domain
 
     spf_record = spflib.SpfRecord.from_domain(domain)
     try:
