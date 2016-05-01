@@ -82,7 +82,7 @@ def handle_domain(domain):
 
     spf_record = spflib.SpfRecord.from_domain(domain)
     try:
-        if spf_record is not None:
+        if spf_record is not None and spf_record.record is not None:
             domain_model.spf_record = spf_record.record
             domain_model.spf_strong = spf_record.is_record_strong()
         else:
@@ -90,10 +90,19 @@ def handle_domain(domain):
             domain_model.spf_strong = False
 
         dmarc_record = dmarclib.DmarcRecord.from_domain(domain)
+        org_domain = dmarc_record.get_org_domain()
+        domain_model.is_subdomain = False
 
-        if dmarc_record is not None:
+        if dmarc_record is not None and dmarc_record.record is not None:
             domain_model.dmarc_record = dmarc_record.record
             domain_model.dmarc_policy = dmarc_record.policy
+            domain_model.dmarc_strong = dmarc_record.is_record_strong()
+        elif org_domain is not None:
+            domain_model.is_subdomain = True
+            domain_model.org_domain = org_domain
+            domain_model.org_record = dmarc_record.get_org_record()
+            domain_model.dmarc_record = None
+            domain_model.dmarc_policy = None
             domain_model.dmarc_strong = dmarc_record.is_record_strong()
         else:
             domain_model.dmarc_record = None

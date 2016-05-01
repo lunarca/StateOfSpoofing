@@ -16,4 +16,7 @@ class Domain(Base):
     dmarc_policy = Column(String)
     dmarc_strong = Column(Boolean)
     domain_vulnerable = Column(Boolean)
+    org_domain = Column(String)
+    is_subdomain = Column(Boolean)
+    org_record = Column(String)
 
