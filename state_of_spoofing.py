@@ -100,7 +100,7 @@ def handle_domain(domain):
         elif org_domain is not None:
             domain_model.is_subdomain = True
             domain_model.org_domain = org_domain
-            domain_model.org_record = dmarc_record.get_org_record()
+            domain_model.org_record = dmarc_record.get_org_record().record
             domain_model.dmarc_record = None
             domain_model.dmarc_policy = None
             domain_model.dmarc_strong = dmarc_record.is_record_strong()
